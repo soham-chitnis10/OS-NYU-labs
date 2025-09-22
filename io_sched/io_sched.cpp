@@ -1,80 +1,3 @@
-// Modularized scheduler class implementations
-#include "iosched.h"
-#include <climits>
-#include <cstdio>
-#include <algorithm>
-#include <cmath>
-
-extern int curr_track;
-extern IOReq* active;
-
-// FIFO
-IOReq* FIFO::strategy() {
-    if (io_queue.empty()) return nullptr;
-    return io_queue.front();
-}
-void FIFO::add_req(IOReq* io_req) { io_queue.push(io_req); }
-void FIFO::completed_req() { io_queue.pop(); }
-void FIFO::print_queue() {
-    std::queue<IOReq*> tempQ = io_queue;
-    printf("\tGet: (");
-    while (!tempQ.empty()) {
-        IOReq* req = tempQ.front();
-        printf("%d:%d ", req->id, abs(req->track_num - curr_track));
-        tempQ.pop();
-    }
-    if (!io_queue.empty())
-        printf(") --> %d\n", io_queue.front()->id);
-    else
-        printf(")\n");
-}
-bool FIFO::all_processed() { return io_queue.empty(); }
-
-// SSTF
-IOReq* SSTF::strategy() {
-    if (io_queue.empty()) return nullptr;
-}
-void SSTF::add_req(IOReq* req) { io_queue.push_back(req); }
-void SSTF::completed_req() {
-        printf("%d:%d ", req->id, abs(req->track_num - curr_track));
-        } else {
-            if ((curr_track - req->track_num) < min_dist_down) {
-                min_dist_down = (curr_track - req->track_num);
-                selected_down = req;
-            }
-        }
-    }
-    if (direction == 1) {
-        if (min_dist_up == INT_MAX) {
-            direction = -1;
-            return selected_down;
-        }
-        return selected_up;
-    } else {
-        if (min_dist_down == INT_MAX) {
-            direction = 1;
-            return selected_up;
-        }
-        return selected_down;
-    }
-}
-void FLOOK::add_req(IOReq* req) { add_queue_ptr->push_back(req); }
-void FLOOK::completed_req() {
-    auto it = std::find(active_queue_ptr->begin(), active_queue_ptr->end(), active);
-    if (it != active_queue_ptr->end()) active_queue_ptr->erase(it);
-}
-void FLOOK::print_queue() {
-    printf("\tGet: (");
-    for (auto req : *active_queue_ptr) {
-        printf("%d:%d ", req->id, (req->track_num - curr_track));
-    }
-    if (active)
-        printf(") --> %d\n", active->id);
-    else
-        printf(")\n");
-}
-bool FLOOK::all_processed() { return active_queue_ptr->empty() && add_queue_ptr->empty(); }
-// ...existing code...
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -89,11 +12,11 @@ bool f_flag = false;
 bool q_flag = false;
 
 int total_time = 0;
-int total_movement =0;
+int total_movement = 0;
 int curr_time = 1;
 int curr_track = 0;
 int total_ios = 0;
-bool check_completed =true;
+bool check_completed = true;
 
 int main(int argc, char *argv[]) {
     char algo = 'N';
